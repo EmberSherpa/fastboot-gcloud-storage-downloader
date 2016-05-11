@@ -1,9 +1,4 @@
 "use strict";
-/* global env */
-
-const projectId     = env.process.FASTBOOT_GCLOUD_PROJECT_ID
-const client_email  = env.process.FASTBOOT_GCLOUD_CLIENT_EMAIL;
-const private_key   = env.process.FASTBOOT_GCLOUD_PRIVATE_KEY;
 
 const fs = require('fs');
 const path = require('path');
@@ -17,11 +12,7 @@ function AppNotFoundError(message) {
   return error;
 }
 
-let gcloud = require('gcloud')({
-  projectId,
-  credentials: { client_email, private_key }
-});
-let 
+let gcloud = require('gcloud');
 
 let storage = gcloud.storage();
 
@@ -32,9 +23,6 @@ let storage = gcloud.storage();
 class GCloudStorageDownloader {
   constructor(options) {
     this.ui = options.ui;
-    
-    this.configProjectId = options.projectId;
-    this.configCredentials = options.credentials;
     this.configBucket = options.bucket;    
     this.configKey = options.key;
   }
@@ -45,11 +33,6 @@ class GCloudStorageDownloader {
       return Promise.reject(new AppNotFoundError());
     }
     
-    if (!this.configProjectId || !this.configCredentials) {
-      this.ui.writeError('no projectId or credentials; not downloading app');
-      return Promise.reject(new AppNotFoundError());
-    }
-
     return this.fetchCurrentVersion()
       .then(() => this.removeOldApp())
       .then(() => this.downloadAppZip())
@@ -64,14 +47,12 @@ class GCloudStorageDownloader {
   }
 
   fetchCurrentVersion() {
-    let projectId = this.configProjectId;
-    let credentials = this.configCredentials;
     let bucket = this.configBucket;
     let key = this.configKey;
 
     this.ui.writeLine('fetching current app version from ' + bucket + '/' + key);
 
-    let stream = this.readStream(bucket, file);
+    let stream = this.readStream(bucket, key);
     
     return this.streamToPromise(stream)
       .then(data => {
@@ -92,7 +73,7 @@ class GCloudStorageDownloader {
   
   streamToPromise(stream) {
     return new Promise(function(resolve, reject){
-      let data = ''
+      let data = '';
       stream.on('error', reject)
         .on('data', chunk => data+=chunk )
         .on('end', function() {
@@ -108,11 +89,11 @@ class GCloudStorageDownloader {
 
       let zipPath = this.zipPath;
       let file = fs.createWriteStream(zipPath);
-      let request = this.readStream(bucket, key);
+      let stream = this.readStream(bucket, key);
 
       this.ui.writeLine("saving gcloud Storage object " + bucket + "/" + key + " to " + zipPath);
 
-      request.createReadStream().pipe(file)
+      stream.pipe(file)
         .on('close', res)
         .on('error', rej);
     });
