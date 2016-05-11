@@ -1,0 +1,31 @@
+
+{
+  "name": "fastboot-gcloud-storage-downloader",
+  "version": "0.1.0",
+  "description": "A FastBoot App Server downloader for gcloud Storage",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/taras/fastboot-gcloud-storage-downloader.git"
+  },
+  "keywords": [
+    "ember",
+    "fastboot",
+    "downloader",
+    "gcloud",
+    "gcloud-storage"
+  ],
+  "author": "Taras Mankovski <tarasm@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/taras/fastboot-gcloud-storage-downloader/issues"
+  },
+  "homepage": "https://github.com/taras/fastboot-gcloud-storage-downloader#readme",
+  "dependencies": {
+    "gcloud": "^0.32.0",
+    "fs-promise": "^0.5.0"
+  }
+}
