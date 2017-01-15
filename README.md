@@ -1,10 +1,10 @@
-FastBoot Google Storage Downloader# 
+# FastBoot Google Storage Downloader
 
-This downloader for the FastBoot App Server works with Google Storage to download and unzip the latest version of your deployed application.@#
+This downloader for the FastBoot App Server works with Google Storage to download and unzip the latest version of your deployed application.
 
 To use the downloader, configure it with an Google Storage bucket and key:
 
-```
+```js
 let downloader = new GCloudStorageDownloader({
   bucket: GOOGLE_STORAGE_BUCKET,
   key: GOOGLE_STORAGE_KEY
@@ -17,7 +17,7 @@ let server = new FastBootAppServer({
 
 When the downloader runs, it will download the file at the specified bucket and key. That file should be a JSON file that points at the real application, and looks like this:
 
-```
+```json
 {
   "bucket": "GOOGLE_STORAGE_BUCKET",
   "key": "path/to/dist.zip"
