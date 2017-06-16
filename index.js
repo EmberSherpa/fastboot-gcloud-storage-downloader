@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const fsp  = require('fs-promise');
+const fsp  = require('fs-extra');
 const exec = require('child_process').exec;
 
 function AppNotFoundError(message) {
@@ -11,10 +11,6 @@ function AppNotFoundError(message) {
 
   return error;
 }
-
-let gcloud = require('gcloud');
-
-let storage = gcloud.storage();
 
 /*
  * Downloader class that downloads the latest version of the deployed
@@ -67,6 +63,7 @@ class GCloudStorageDownloader {
   }
 
   readStream(bucket, key) { 
+    let storage = require('@google-cloud/storage')();    
     let file = storage.bucket(bucket).file(key);
     return file.createReadStream();
   }
