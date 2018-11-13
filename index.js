@@ -1,5 +1,6 @@
 "use strict";
 
+const { Storage } = require('@google-cloud/storage');
 const fs = require('fs');
 const path = require('path');
 const fsp  = require('fs-promise');
@@ -12,10 +13,6 @@ function AppNotFoundError(message) {
   return error;
 }
 
-let gcloud = require('gcloud');
-
-let storage = gcloud.storage();
-
 /*
  * Downloader class that downloads the latest version of the deployed
  * app from GCloud Storage and unzips it.
@@ -23,7 +20,7 @@ let storage = gcloud.storage();
 class GCloudStorageDownloader {
   constructor(options) {
     this.ui = options.ui;
-    this.configBucket = options.bucket;    
+    this.configBucket = options.bucket;
     this.configKey = options.key;
   }
 
@@ -32,7 +29,7 @@ class GCloudStorageDownloader {
       this.ui.writeError('no gcloud Storage bucket or key; not downloading app');
       return Promise.reject(new AppNotFoundError());
     }
-    
+
     return this.fetchCurrentVersion()
       .then(() => this.removeOldApp())
       .then(() => this.downloadAppZip())
@@ -53,7 +50,7 @@ class GCloudStorageDownloader {
     this.ui.writeLine('fetching current app version from ' + bucket + '/' + key);
 
     let stream = this.readStream(bucket, key);
-    
+
     return this.streamToPromise(stream)
       .then(data => {
         let config = JSON.parse(data);
@@ -66,11 +63,13 @@ class GCloudStorageDownloader {
       });
   }
 
-  readStream(bucket, key) { 
-    let file = storage.bucket(bucket).file(key);
+  readStream(bucketKey, key) {
+    let storage = new Storage();
+    let bucket = storage.bucket(bucketKey);
+    let file = bucket.file(key);
     return file.createReadStream();
   }
-  
+
   streamToPromise(stream) {
     return new Promise(function(resolve, reject){
       let data = '';
