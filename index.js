@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const fsp  = require('fs-promise');
 const exec = require('child_process').exec;
+const { Storage } = require('@google-cloud/storage');
 
 function AppNotFoundError(message) {
   let error = new Error(message);
@@ -12,9 +13,7 @@ function AppNotFoundError(message) {
   return error;
 }
 
-let gcloud = require('gcloud');
-
-let storage = gcloud.storage();
+let storage = new Storage();
 
 /*
  * Downloader class that downloads the latest version of the deployed
