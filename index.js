@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const fsp  = require('fs-promise');
 const exec = require('child_process').exec;
+const unzipper = require('unzipper');
 const { Storage } = require('@google-cloud/storage');
 
 function AppNotFoundError(message) {
@@ -101,10 +102,14 @@ class GCloudStorageDownloader {
   unzipApp() {
     let zipPath = this.zipPath;
 
-    return this.exec('unzip ' + zipPath)
-      .then(() => {
-        this.ui.writeLine("unzipped " + zipPath);
-      });
+    return new Promise((resolve, reject) => {
+      const stream = fs.createReadStream(zipPath);
+      stream.pipe(unzipper.Extract({ path: process.cwd() }));
+      stream.on("end", resolve);
+      stream.on("error", reject);
+    }).then(() => {
+      this.ui.writeLine("unzipped " + zipPath);
+    });
   }
 
   installNPMDependencies() {
