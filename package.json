@@ -25,7 +25,7 @@
   "homepage": "https://github.com/EmberSherpa/fastboot-gcloud-storage-downloader#readme",
   "dependencies": {
     "@google-cloud/storage": "^4.1.0",
-    "fs-promise": "0.5.0",
+    "fs-promise": "2.0.3",
     "unzipper": "^0.10.5"
   }
 }
