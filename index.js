@@ -4,7 +4,9 @@ const fs = require("fs");
 const path = require("path");
 const fsp = require("fs-promise");
 const { exec } = require("child_process");
-const { storage } = require("@google-cloud/storage");
+const { Storage } = require("@google-cloud/storage");
+
+const storage = new Storage();
 
 function AppNotFoundError(message) {
   const error = new Error(message);
