@@ -1,6 +1,6 @@
 {
   "name": "fastboot-gcloud-storage-downloader",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A FastBoot App Server downloader for gcloud Storage",
   "main": "index.js",
   "repository": {
@@ -21,7 +21,6 @@
   },
   "homepage": "https://github.com/EmberSherpa/fastboot-gcloud-storage-downloader#readme",
   "dependencies": {
-    "@google-cloud/storage": "^5.5.0",
-    "fs-promise": "0.5.0"
+    "@google-cloud/storage": "^5.5.0"    
   }
 }

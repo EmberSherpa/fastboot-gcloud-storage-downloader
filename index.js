@@ -2,7 +2,7 @@
 
 const fs = require("fs");
 const path = require("path");
-const fsp = require("fs-promise");
+const fsp = fs.promises;
 const { exec } = require("child_process");
 const { Storage } = require("@google-cloud/storage");
 
@@ -44,7 +44,7 @@ class GCloudStorageDownloader {
 
   removeOldApp() {
     this.ui.writeLine("removing " + this.outputPath);
-    return fsp.remove(this.outputPath);
+    return fsp.unlink(this.outputPath);
   }
 
   fetchCurrentVersion() {
