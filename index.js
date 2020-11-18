@@ -1,20 +1,17 @@
 "use strict";
 
-const fs = require('fs');
-const path = require('path');
-const fsp  = require('fs-promise');
-const exec = require('child_process').exec;
+const fs = require("fs");
+const path = require("path");
+const fsp = require("fs-promise");
+const { exec } = require("child_process");
+const { storage } = require("@google-cloud/storage");
 
 function AppNotFoundError(message) {
-  let error = new Error(message);
-  error.name = 'AppNotFoundError';
+  const error = new Error(message);
+  error.name = "AppNotFoundError";
 
   return error;
 }
-
-let gcloud = require('gcloud');
-
-let storage = gcloud.storage();
 
 /*
  * Downloader class that downloads the latest version of the deployed
@@ -23,16 +20,18 @@ let storage = gcloud.storage();
 class GCloudStorageDownloader {
   constructor(options) {
     this.ui = options.ui;
-    this.configBucket = options.bucket;    
+    this.configBucket = options.bucket;
     this.configKey = options.key;
   }
 
   download() {
     if (!this.configBucket || !this.configKey) {
-      this.ui.writeError('no gcloud Storage bucket or key; not downloading app');
+      this.ui.writeError(
+        "no gcloud Storage bucket or key; not downloading app"
+      );
       return Promise.reject(new AppNotFoundError());
     }
-    
+
     return this.fetchCurrentVersion()
       .then(() => this.removeOldApp())
       .then(() => this.downloadAppZip())
@@ -42,41 +41,43 @@ class GCloudStorageDownloader {
   }
 
   removeOldApp() {
-    this.ui.writeLine('removing ' + this.outputPath);
+    this.ui.writeLine("removing " + this.outputPath);
     return fsp.remove(this.outputPath);
   }
 
   fetchCurrentVersion() {
-    let bucket = this.configBucket;
-    let key = this.configKey;
+    const bucket = this.configBucket;
+    const key = this.configKey;
 
-    this.ui.writeLine('fetching current app version from ' + bucket + '/' + key);
+    this.ui.writeLine(
+      "fetching current app version from " + bucket + "/" + key
+    );
 
-    let stream = this.readStream(bucket, key);
-    
-    return this.streamToPromise(stream)
-      .then(data => {
-        let config = JSON.parse(data);
-        this.ui.writeLine('got config', config);
+    const stream = this.readStream(bucket, key);
 
-        this.appBucket = config.bucket;
-        this.appKey = config.key;
-        this.zipPath = path.basename(config.key);
-        this.outputPath = outputPathFor(this.zipPath);
-      });
+    return this.streamToPromise(stream).then((data) => {
+      let config = JSON.parse(data);
+      this.ui.writeLine("got config", config);
+
+      this.appBucket = config.bucket;
+      this.appKey = config.key;
+      this.zipPath = path.basename(config.key);
+      this.outputPath = outputPathFor(this.zipPath);
+    });
   }
 
-  readStream(bucket, key) { 
-    let file = storage.bucket(bucket).file(key);
+  readStream(bucket, key) {
+    const file = storage.bucket(bucket).file(key);
     return file.createReadStream();
   }
-  
+
   streamToPromise(stream) {
-    return new Promise(function(resolve, reject){
-      let data = '';
-      stream.on('error', reject)
-        .on('data', chunk => data+=chunk )
-        .on('end', function() {
+    return new Promise(function (resolve, reject) {
+      let data = "";
+      stream
+        .on("error", reject)
+        .on("data", (chunk) => (data += chunk))
+        .on("end", function () {
           resolve(data);
         });
     });
@@ -84,34 +85,33 @@ class GCloudStorageDownloader {
 
   downloadAppZip() {
     return new Promise((res, rej) => {
-      let bucket = this.appBucket;
-      let key = this.appKey;
+      const bucket = this.appBucket;
+      const key = this.appKey;
 
-      let zipPath = this.zipPath;
-      let file = fs.createWriteStream(zipPath);
-      let stream = this.readStream(bucket, key);
+      const zipPath = this.zipPath;
+      const file = fs.createWriteStream(zipPath);
+      const stream = this.readStream(bucket, key);
 
-      this.ui.writeLine("saving gcloud Storage object " + bucket + "/" + key + " to " + zipPath);
+      this.ui.writeLine(
+        "saving gcloud Storage object " + bucket + "/" + key + " to " + zipPath
+      );
 
-      stream.pipe(file)
-        .on('close', res)
-        .on('error', rej);
+      stream.pipe(file).on("close", res).on("error", rej);
     });
   }
 
   unzipApp() {
-    let zipPath = this.zipPath;
+    const zipPath = this.zipPath;
 
-    return this.exec('unzip ' + zipPath)
-      .then(() => {
-        this.ui.writeLine("unzipped " + zipPath);
-      });
+    return this.exec("unzip " + zipPath).then(() => {
+      this.ui.writeLine("unzipped " + zipPath);
+    });
   }
 
   installNPMDependencies() {
     return this.exec(`cd ${this.outputPath} && npm install`)
-      .then(() => this.ui.writeLine('installed npm dependencies'))
-      .catch(() => this.ui.writeError('unable to install npm dependencies'));
+      .then(() => this.ui.writeLine("installed npm dependencies"))
+      .catch(() => this.ui.writeError("unable to install npm dependencies"));
   }
 
   exec(command) {
@@ -130,10 +130,10 @@ class GCloudStorageDownloader {
 }
 
 function outputPathFor(zipPath) {
-  let name = path.basename(zipPath, '.zip');
+  const name = path.basename(zipPath, ".zip");
 
   // Remove MD5 hash
-  return name.split('-').slice(0, -1).join('-');
+  return name.split("-").slice(0, -1).join("-");
 }
 
 module.exports = GCloudStorageDownloader;
